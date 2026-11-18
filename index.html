@@ -55,7 +55,7 @@
         .app-header {
             width: 100%;
             box-shadow: 0 4px 12px rgba(45, 20, 5, 0.18);
-            position: relative;
+            position: sticky; top: 0;
             z-index: 10;
         }
 
@@ -70,6 +70,7 @@
         }
 
         .header-bar {
+        padding-top: calc(6px + env(safe-area-inset-top, 0px));
             background-color: var(--cream-surface);
             backdrop-filter: blur(6px);
             border-bottom: 2px solid var(--border-subtle);
