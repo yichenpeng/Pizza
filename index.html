@@ -890,6 +890,48 @@ img, svg { -webkit-user-drag: none; }
     0%, 99% { pointer-events: none; }
     100% { pointer-events: auto; }
 }
+.venn-tray {
+    position: relative;
+    width: min(94vw, 380px);
+    aspect-ratio: 1 / 1;
+    order: 2;
+}
+.venn-lines {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+}
+.venn-lines circle {
+    fill: none;
+    stroke: #78350f;
+    stroke-opacity: 0.1;
+    stroke-width: 0.5;
+}
+.venn-tray .ingredient-source {
+    position: absolute;
+    width: 16%;
+    transform: translate(-50%, -45%);
+}
+.venn-tray .ingredient-bowl {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1 / 1;
+    padding: 0;
+}
+.venn-tray .icon-preview {
+    width: 80%;
+    height: 80%;
+}
+.venn-tray .ingredient-label {
+    font-size: 0.68rem;
+    padding: 1px 6px;
+    margin-top: 3px;
+}
+@media (min-width: 1024px) {
+    .venn-tray { order: 3; width: 420px; }
+}
     </style>
 </head>
 <body>
@@ -901,7 +943,7 @@ img, svg { -webkit-user-drag: none; }
             <div class="brand-group">
                 <span class="brand-icon">🍕</span>
                 <div>
-                    <h1 class="brand-title">義式窯烤手作披薩工坊</h1>
+                    <h1 class="brand-title">Pizza Magic🪄</h1>
                     <p class="brand-subtitle">點擊周圍食材即可均勻鋪滿餅皮・再點一次空盤可取回</p>
                 </div>
                         </div>
@@ -911,36 +953,7 @@ img, svg { -webkit-user-drag: none; }
     <!-- 主工作台區域：左側配料 + 中央披薩砧板 + 右側配料 -->
     <main class="workspace">
         
-        <!-- 左側配料盤 (4種配料) -->
-        <section aria-label="左側配料區" class="tray-left">
-            <div class="ingredient-source" id="source-tomato" data-type="tomato">
-                <div class="ingredient-bowl">
-                    <div class="icon-preview" id="icon-preview-tomato"></div>
-                </div>
-                <span class="ingredient-label">番茄片</span>
-            </div>
-
-            <div class="ingredient-source" id="source-pineapple" data-type="pineapple">
-                <div class="ingredient-bowl">
-                    <div class="icon-preview" id="icon-preview-pineapple"></div>
-                </div>
-                <span class="ingredient-label">鳳梨片</span>
-            </div>
-
-            <div class="ingredient-source" id="source-shrimp" data-type="shrimp">
-                <div class="ingredient-bowl">
-                    <div class="icon-preview" id="icon-preview-shrimp"></div>
-                </div>
-                <span class="ingredient-label">鮮蝦仁</span>
-            </div>
-
-            <div class="ingredient-source" id="source-bacon" data-type="bacon">
-                <div class="ingredient-bowl">
-                    <div class="icon-preview" id="icon-preview-bacon"></div>
-                </div>
-                <span class="ingredient-label">煙燻培根</span>
-            </div>
-        </section>
+        
 
         <!-- 中央披薩製作區（含木質砧板與披薩本體） -->
         <section id="capture-area" class="center-stage">
@@ -1017,19 +1030,7 @@ img, svg { -webkit-user-drag: none; }
                             <path d="M160,295 Q185,285 205,300"/>
                             <path d="M225,270 Q245,280 260,265"/>
                         </g>
-
-                        <!-- 4. 烘烤後出現的微焦起司泡泡與焦斑 -->
-                        <g id="char-spots" opacity="0" style="transition: opacity 1.5s ease;">
-                            <circle cx="115" cy="125" r="7" fill="#b86b14" opacity="0.55"/>
-                            <circle cx="115" cy="125" r="4" fill="#6e3504" opacity="0.6"/>
-                            <circle cx="275" cy="115" r="8" fill="#b86b14" opacity="0.55"/>
-                            <circle cx="275" cy="115" r="4.5" fill="#6e3504" opacity="0.65"/>
-                            <circle cx="290" cy="250" r="7" fill="#b86b14" opacity="0.5"/>
-                            <circle cx="290" cy="250" r="3.5" fill="#6e3504" opacity="0.6"/>
-                            <circle cx="120" cy="265" r="9" fill="#b86b14" opacity="0.55"/>
-                            <circle cx="120" cy="265" r="5" fill="#6e3504" opacity="0.65"/>
-                            <circle cx="205" cy="72" r="6" fill="#7a3b06" opacity="0.55"/>
-                            <circle cx="195" cy="325" r="7" fill="#7a3b06" opacity="0.55"/>
+ cy="325" r="7" fill="#7a3b06" opacity="0.55"/>
                             <ellipse cx="42" cy="130" rx="8" ry="16" transform="rotate(20 42 130)" fill="#3d1c02" opacity="0.65"/>
                             <ellipse cx="355" cy="155" rx="7" ry="18" transform="rotate(-15 355 155)" fill="#3d1c02" opacity="0.65"/>
                             <ellipse cx="145" cy="382" rx="16" ry="6" transform="rotate(15 145 382)" fill="#3d1c02" opacity="0.65"/>
@@ -1048,30 +1049,45 @@ img, svg { -webkit-user-drag: none; }
             <!-- 操作提示浮動標籤 -->
             <div id="toast-message" class="toast-message">提示訊息</div>
         </section>
+<section aria-label="配料區" class="venn-tray">
+    <svg class="venn-lines" viewBox="0 0 100 100" aria-hidden="true">
+        <circle cx="35" cy="34" r="30"/>
+        <circle cx="65" cy="34" r="30"/>
+        <circle cx="50" cy="60" r="30"/>
+    </svg>
 
-        <!-- 右側配料盤 (3種配料) -->
-        <section aria-label="右側配料區" class="tray-right">
-            <div class="ingredient-source" id="source-mushroom" data-type="mushroom">
-                <div class="ingredient-bowl">
-                    <div class="icon-preview" id="icon-preview-mushroom"></div>
-                </div>
-                <span class="ingredient-label">切片香菇</span>
-            </div>
+    <div class="ingredient-source" id="source-mushroom" data-type="mushroom" style="left:19%;top:22%">
+        <div class="ingredient-bowl"><div class="icon-preview" id="icon-preview-mushroom"></div></div>
+        <span class="ingredient-label">切片香菇</span>
+    </div>
+    <div class="ingredient-source" id="source-tomato" data-type="tomato" style="left:50%;top:22%">
+        <div class="ingredient-bowl"><div class="icon-preview" id="icon-preview-tomato"></div></div>
+        <span class="ingredient-label">番茄片</span>
+    </div>
+    <div class="ingredient-source" id="source-corn" data-type="corn" style="left:81%;top:22%">
+        <div class="ingredient-bowl"><div class="icon-preview" id="icon-preview-corn"></div></div>
+        <span class="ingredient-label">甜玉米粒</span>
+    </div>
 
-            <div class="ingredient-source" id="source-pepper" data-type="pepper">
-                <div class="ingredient-bowl">
-                    <div class="icon-preview" id="icon-preview-pepper"></div>
-                </div>
-                <span class="ingredient-label">新鮮青椒</span>
-            </div>
+    <div class="ingredient-source" id="source-pineapple" data-type="pineapple" style="left:28%;top:53%">
+        <div class="ingredient-bowl"><div class="icon-preview" id="icon-preview-pineapple"></div></div>
+        <span class="ingredient-label">鳳梨片</span>
+    </div>
+    <div class="ingredient-source" id="source-bacon" data-type="bacon" style="left:50%;top:46%">
+        <div class="ingredient-bowl"><div class="icon-preview" id="icon-preview-bacon"></div></div>
+        <span class="ingredient-label">煙燻培根</span>
+    </div>
+    <div class="ingredient-source" id="source-shrimp" data-type="shrimp" style="left:72%;top:53%">
+        <div class="ingredient-bowl"><div class="icon-preview" id="icon-preview-shrimp"></div></div>
+        <span class="ingredient-label">鮮蝦仁</span>
+    </div>
 
-            <div class="ingredient-source" id="source-corn" data-type="corn">
-                <div class="ingredient-bowl">
-                    <div class="icon-preview" id="icon-preview-corn"></div>
-                </div>
-                <span class="ingredient-label">甜玉米粒</span>
-            </div>
-        </section>
+    <div class="ingredient-source" id="source-pepper" data-type="pepper" style="left:50%;top:76%">
+        <div class="ingredient-bowl"><div class="icon-preview" id="icon-preview-pepper"></div></div>
+        <span class="ingredient-label">新鮮青椒</span>
+    </div>
+</section>
+     
 
     </main>
 
