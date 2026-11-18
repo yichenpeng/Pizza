@@ -1,0 +1,1697 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>互動式手作披薩工坊 | Pizzeria Artigiana</title>
+    <style>
+        :root {
+            --wood-bg-light: #e2b487;
+            --wood-bg-base: #c89666;
+            --wood-bg-dark: #b37c4c;
+            --board-light: #deb887;
+            --board-mid: #bc8f5f;
+            --board-dark: #9c6f44;
+            --board-border: #8b5a2b;
+            --cream-surface: rgba(255, 248, 238, 0.96);
+            --text-primary: #451a03;
+            --text-secondary: #78350f;
+            --accent-red: #b91c1c;
+            --accent-red-hover: #991b1b;
+            --accent-amber: #f59e0b;
+            --accent-amber-hover: #d97706;
+            --accent-emerald: #059669;
+            --accent-emerald-hover: #047857;
+            --accent-stone: #57534e;
+            --accent-stone-hover: #44403c;
+            --border-subtle: rgba(146, 64, 14, 0.22);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang TC", "Microsoft JhengHei", "Noto Sans TC", sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            color: var(--text-primary);
+            touch-action: none;
+            user-select: none;
+            -webkit-user-select: none;
+            overflow-x: hidden;
+            background-color: var(--wood-bg-base);
+            background-image: 
+                repeating-linear-gradient(90deg, rgba(139, 90, 43, 0.08) 0px, rgba(139, 90, 43, 0.08) 2px, transparent 2px, transparent 14px),
+                repeating-linear-gradient(0deg, rgba(101, 67, 33, 0.05) 0px, rgba(101, 67, 33, 0.05) 40px, rgba(160, 110, 60, 0.08) 40px, rgba(160, 110, 60, 0.08) 80px),
+                radial-gradient(circle at center, var(--wood-bg-light) 0%, var(--wood-bg-dark) 100%);
+        }
+
+        /* 頂部義式餐館招牌列 */
+        .app-header {
+            width: 100%;
+            box-shadow: 0 4px 12px rgba(45, 20, 5, 0.18);
+            position: relative;
+            z-index: 10;
+        }
+
+        .gingham-banner {
+            height: 12px;
+            width: 100%;
+            background-color: #ffffff;
+            background-image: 
+                linear-gradient(90deg, rgba(211, 47, 47, 0.85) 50%, transparent 50%),
+                linear-gradient(rgba(211, 47, 47, 0.85) 50%, transparent 50%);
+            background-size: 28px 28px;
+        }
+
+        .header-bar {
+            background-color: var(--cream-surface);
+            backdrop-filter: blur(6px);
+            border-bottom: 2px solid var(--border-subtle);
+            padding: 10px 16px;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+        }
+
+        .brand-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .brand-icon {
+            font-size: 1.85rem;
+            line-height: 1;
+        }
+
+        .brand-title {
+            font-size: 1.15rem;
+            font-weight: 900;
+            letter-spacing: 0.03em;
+            color: #991b1b;
+            line-height: 1.25;
+        }
+
+        .brand-subtitle {
+            font-size: 0.75rem;
+            color: rgba(120, 53, 15, 0.85);
+            display: none;
+        }
+
+        @media (min-width: 640px) {
+            .brand-title {
+                font-size: 1.3rem;
+            }
+            .brand-subtitle {
+                display: block;
+            }
+        }
+
+        .stats-badge {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background-color: rgba(254, 243, 199, 0.92);
+            border: 1px solid #fcd34d;
+            padding: 6px 12px;
+            border-radius: 9999px;
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.08);
+        }
+
+        .stats-label {
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: #78350f;
+            white-space: nowrap;
+        }
+
+        .header-added-icons {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            min-height: 26px;
+        }
+
+        .header-empty-hint {
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: #92400e;
+            background-color: rgba(255, 255, 255, 0.78);
+            padding: 2px 10px;
+            border-radius: 9999px;
+            border: 1px dashed #fcd34d;
+        }
+
+        @keyframes badgeIconPop {
+            0% { transform: scale(0.3); opacity: 0; }
+            70% { transform: scale(1.18); opacity: 1; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .header-icon-slot {
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            background-color: #ffffff;
+            border: 1px solid #fcd34d;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 3px;
+            animation: badgeIconPop 0.28s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+
+        .header-icon-slot svg {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        .stats-toggle-btn {
+            background: none;
+            border: none;
+            font-size: 0.78rem;
+            color: #b45309;
+            text-decoration: underline;
+            font-weight: 600;
+            cursor: pointer;
+            margin-left: 4px;
+            padding: 2px 4px;
+        }
+
+        .stats-toggle-btn:hover {
+            color: #b91c1c;
+        }
+
+        .stats-drawer {
+            display: none;
+            background-color: #fff3e0;
+            border-bottom: 1px solid #fcd34d;
+            padding: 8px 16px;
+            font-size: 0.78rem;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .stats-drawer.open {
+            display: flex;
+        }
+
+        .stat-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background-color: rgba(255, 255, 255, 0.9);
+            padding: 4px 10px;
+            border-radius: 9999px;
+            border: 1px solid #fde68a;
+            font-weight: 600;
+            color: #78350f;
+        }
+
+        .stat-pill-icon {
+            width: 20px;
+            height: 20px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .stat-pill.inactive {
+            opacity: 0.45;
+            filter: grayscale(1);
+        }
+
+        /* 主工作台區域 */
+        .workspace {
+            flex: 1;
+            width: 100%;
+            max-width: 1152px;
+            margin: 0 auto;
+            padding: 12px 16px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+        }
+
+        @media (min-width: 1024px) {
+            .workspace {
+                flex-direction: row;
+                gap: 28px;
+                padding: 16px 24px;
+            }
+        }
+
+        /* 配料盤區塊 */
+        .tray-left {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            width: 100%;
+            max-width: 440px;
+            justify-items: center;
+            order: 2;
+        }
+
+        .tray-right {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            width: 100%;
+            max-width: 360px;
+            justify-items: center;
+            order: 3;
+        }
+
+        @media (min-width: 640px) {
+            .tray-left,
+            .tray-right {
+                gap: 16px;
+            }
+        }
+
+        @media (min-width: 1024px) {
+            .tray-left {
+                grid-template-columns: 1fr;
+                width: auto;
+                max-width: none;
+                order: 1;
+                gap: 18px;
+            }
+            .tray-right {
+                grid-template-columns: 1fr;
+                width: auto;
+                max-width: none;
+                order: 3;
+                gap: 20px;
+            }
+        }
+
+        .ingredient-source {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        .ingredient-source:active {
+            cursor: grabbing;
+        }
+
+        /* 已使用的空盤狀態 */
+        .ingredient-source.used {
+            cursor: pointer;
+        }
+
+        .ingredient-source.used .ingredient-bowl {
+            background: radial-gradient(circle at 35% 35%, #f3f4f6, #e5e7eb 75%, #d1d5db 100%);
+            box-shadow: 
+                0 3px 6px rgba(60, 35, 15, 0.14),
+                inset 0 4px 10px rgba(0, 0, 0, 0.16);
+            transform: none !important;
+        }
+
+        .ingredient-source.used .icon-preview {
+            display: none !important;
+            opacity: 0 !important;
+            visibility: hidden !important;
+            pointer-events: none !important;
+        }
+
+        .ingredient-source.used .ingredient-label {
+            opacity: 0.6;
+            background-color: rgba(243, 244, 246, 0.85);
+            color: #78716c;
+            border-color: #d6d3d1;
+        }
+
+        .ingredient-bowl {
+            width: 72px;
+            height: 72px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 8px;
+            position: relative;
+            background: radial-gradient(circle at 30% 30%, #ffffff, #f3f4f6 70%, #d1d5db 100%);
+            box-shadow: 
+                0 8px 16px rgba(60, 35, 15, 0.3),
+                inset 0 2px 4px rgba(255, 255, 255, 0.9),
+                inset 0 -3px 6px rgba(0, 0, 0, 0.12);
+            transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        @media (min-width: 640px) {
+            .ingredient-bowl {
+                width: 92px;
+                height: 92px;
+            }
+        }
+
+        .ingredient-bowl:hover {
+            transform: scale(1.07);
+        }
+
+        .ingredient-bowl:active {
+            transform: scale(0.95);
+        }
+
+        .icon-preview {
+            width: 56px;
+            height: 56px;
+            pointer-events: none;
+            transition: opacity 0.25s ease, transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        @media (min-width: 640px) {
+            .icon-preview {
+                width: 68px;
+                height: 68px;
+            }
+        }
+
+        .ingredient-label {
+            margin-top: 5px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            background-color: rgba(255, 248, 238, 0.92);
+            padding: 2px 10px;
+            border-radius: 9999px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+            color: var(--text-primary);
+            border: 1px solid #fde68a;
+            white-space: nowrap;
+        }
+
+        @media (min-width: 640px) {
+            .ingredient-label {
+                font-size: 0.85rem;
+            }
+        }
+
+        /* 中央披薩製作區 */
+        .center-stage {
+            order: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            padding: 8px;
+            border-radius: 24px;
+        }
+
+        @media (min-width: 1024px) {
+            .center-stage {
+                order: 2;
+                padding: 16px;
+            }
+        }
+
+        .wooden-board {
+            position: relative;
+            border-radius: 50%;
+            width: 310px;
+            height: 310px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: radial-gradient(circle at 35% 35%, var(--board-light), var(--board-mid) 75%, var(--board-dark) 100%);
+            box-shadow: 
+                0 20px 35px rgba(58, 32, 10, 0.45),
+                inset 0 2px 6px rgba(255, 255, 255, 0.4),
+                inset 0 -4px 10px rgba(74, 42, 15, 0.5);
+            border: 4px solid var(--board-border);
+            transition: all 0.5s ease;
+        }
+
+        @media (min-width: 640px) {
+            .wooden-board {
+                width: 410px;
+                height: 410px;
+            }
+        }
+
+        @media (min-width: 768px) {
+            .wooden-board {
+                width: 450px;
+                height: 450px;
+            }
+        }
+
+        .board-handle {
+            display: none;
+            position: absolute;
+            right: -42px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 48px;
+            height: 64px;
+            background: linear-gradient(to right, var(--board-mid), var(--board-dark));
+            border-radius: 0 16px 16px 0;
+            border-top: 4px solid var(--board-border);
+            border-right: 4px solid var(--board-border);
+            border-bottom: 4px solid var(--board-border);
+            box-shadow: 4px 8px 14px rgba(58, 32, 10, 0.35);
+            z-index: -1;
+        }
+
+        @media (min-width: 640px) {
+            .board-handle {
+                display: block;
+            }
+        }
+
+        .board-handle-hole {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background-color: var(--wood-bg-base);
+            border: 2px solid #7a4b21;
+            margin: 22px auto 0;
+        }
+
+        /* 蒸氣特效 */
+        .steam-container {
+            position: absolute;
+            top: -24px;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: center;
+            gap: 32px;
+            pointer-events: none;
+            z-index: 40;
+        }
+
+        .steam-container.hidden {
+            display: none;
+        }
+
+        @keyframes steamRise {
+            0% { transform: translateY(0) scale(0.9); opacity: 0; }
+            40% { opacity: 0.58; }
+            100% { transform: translateY(-45px) scale(1.25); opacity: 0; }
+        }
+
+        .steam-wisp {
+            width: 32px;
+            height: 64px;
+            color: rgba(255, 255, 255, 0.75);
+            animation: steamRise 3s infinite ease-out;
+        }
+
+        .steam-wisp:nth-child(2) { animation-delay: 1s; }
+        .steam-wisp:nth-child(3) { animation-delay: 2s; }
+
+        /* 披薩本體 */
+        .pizza-base {
+            position: relative;
+            width: 88%;
+            height: 88%;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .pizza-svg {
+            width: 100%;
+            height: 100%;
+            filter: drop-shadow(0 10px 15px rgba(45, 20, 5, 0.35));
+            pointer-events: none;
+        }
+
+        .cheese-melt-overlay {
+            opacity: 0;
+            pointer-events: none;
+            position: absolute;
+            inset: 11%;
+            border-radius: 50%;
+            transition: opacity 1s ease;
+            background: radial-gradient(circle at 35% 35%, rgba(255, 235, 130, 0.28), rgba(230, 140, 20, 0.18) 70%, transparent 100%);
+            box-shadow: inset 0 0 25px rgba(210, 105, 15, 0.35);
+        }
+
+        .toppings-layer {
+            position: absolute;
+            inset: 0;
+            border-radius: 50%;
+        }
+
+        /* 放在披薩上的配料物件 */
+        .placed-topping {
+            position: absolute;
+            cursor: grab;cursor: default; pointer-events: none;
+            filter: drop-shadow(2px 4px 4px rgba(45, 20, 5, 0.45));
+            transition: transform 0.15s ease, filter 0.3s ease;
+            z-index: 20;
+            touch-action: none;
+        }
+
+        .placed-topping:hover {
+            filter: drop-shadow(3px 6px 7px rgba(45, 20, 5, 0.65)) brightness(1.05);
+            z-index: 30;
+        }
+
+        .placed-topping.dragging {
+            cursor: grabbing;
+            z-index: 100 !important;
+            filter: drop-shadow(6px 12px 12px rgba(0, 0, 0, 0.5));
+        }
+
+        /* 烘烤後的特效 */
+        .baked-pizza #pizza-crust {
+            filter: brightness(0.92) contrast(1.12) sepia(0.15);
+            transition: filter 1.5s ease;
+        }
+
+        .baked-pizza .placed-topping {
+            filter: drop-shadow(2px 3px 3px rgba(30, 10, 0, 0.6)) brightness(0.95) contrast(1.15) saturate(1.15);
+            transition: filter 1.5s ease;
+        }
+
+        .baked-pizza .cheese-melt-overlay {
+            opacity: 1;
+        }
+
+        .baked-pizza #char-spots {
+            opacity: 0.85;
+        }
+
+        @keyframes ovenGlow {
+            0%, 100% { box-shadow: 0 20px 35px rgba(58, 32, 10, 0.45), 0 0 0px rgba(255, 110, 20, 0); }
+            50% { box-shadow: 0 20px 35px rgba(58, 32, 10, 0.45), 0 0 48px 18px rgba(255, 95, 15, 0.8); }
+        }
+
+        .baking-animation {
+            animation: ovenGlow 1.6s ease-in-out;
+        }
+
+        /* 提示氣泡 */
+        .toast-message {
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            position: absolute;
+            bottom: 20px;
+            background-color: rgba(69, 26, 3, 0.92);
+            color: #fffbeb;
+            font-size: 0.82rem;
+            font-weight: 500;
+            padding: 8px 16px;
+            border-radius: 9999px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.25);
+            z-index: 50;
+            white-space: nowrap;
+        }
+
+        .toast-message.visible {
+            opacity: 1;
+        }
+
+        /* 底部控制按鈕列 */
+        .app-footer {
+            width: 100%;
+            background-color: var(--cream-surface);
+            backdrop-filter: blur(6px);
+            border-top: 2px solid var(--border-subtle);
+            padding: 12px;
+            box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.04);
+            z-index: 10;
+        }
+
+        .controls-container {
+            max-width: 896px;
+            margin: 0 auto;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        @media (min-width: 640px) {
+            .controls-container {
+                gap: 16px;
+            }
+        }
+
+        .action-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            border: none;
+            color: #ffffff;
+            font-family: inherit;
+            font-weight: 700;
+            font-size: 0.8rem;
+            padding: 10px 16px;
+            border-radius: 9999px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.16);
+            cursor: pointer;
+            transition: transform 0.15s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        @media (min-width: 640px) {
+            .action-btn {
+                font-size: 0.88rem;
+                padding: 10px 20px;
+            }
+        }
+
+        .action-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.22);
+        }
+
+        .action-btn:active {
+            transform: scale(0.95);
+        }
+
+        .btn-bake {
+            background: linear-gradient(135deg, #dc2626, #ea580c);
+            font-weight: 900;
+            box-shadow: 0 4px 12px rgba(220, 38, 38, 0.35), 0 0 0 2px #fdba74;
+        }
+        .btn-bake:hover {
+            background: linear-gradient(135deg, #b91c1c, #c2410c);
+        }
+
+        .btn-clear {
+            background-color: var(--accent-stone);
+        }
+        .btn-clear:hover {
+            background-color: var(--accent-stone-hover);
+        }
+
+        .btn-download {
+            background-color: var(--accent-emerald);
+        }
+        .btn-download:hover {
+            background-color: var(--accent-emerald-hover);
+        }
+
+        /* 窯烤出爐完成展示畫面 (Modal / Overlay) */
+        .completion-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(38, 15, 2, 0.78);
+            backdrop-filter: blur(8px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            z-index: 200;
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+
+        .completion-overlay.open {
+            display: flex;
+            opacity: 1;
+        }
+
+        @keyframes cardPopIn {
+            0% { transform: scale(0.86) translateY(20px); opacity: 0; }
+            100% { transform: scale(1) translateY(0); opacity: 1; }
+        }
+
+        .completion-card {
+            background: linear-gradient(180deg, #fffbf2 0%, #fef3c7 100%);
+            border: 3px solid #f59e0b;
+            border-radius: 28px;
+            max-width: 500px;
+            width: 100%;
+            padding: 24px 20px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.45), 0 0 0 6px rgba(255, 248, 238, 0.25);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            position: relative;
+            animation: cardPopIn 0.45s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+        }
+
+        .completion-badge {
+            background: linear-gradient(135deg, #dc2626, #ea580c);
+            color: #ffffff;
+            font-size: 0.78rem;
+            font-weight: 800;
+            letter-spacing: 0.08em;
+            padding: 4px 14px;
+            border-radius: 9999px;
+            box-shadow: 0 3px 8px rgba(220, 38, 38, 0.3);
+            margin-bottom: 8px;
+        }
+
+        .completion-title {
+            font-size: 1.4rem;
+            font-weight: 900;
+            color: #7c2d12;
+            margin-bottom: 4px;
+        }
+
+        .completion-subtitle {
+            font-size: 0.84rem;
+            color: #9a3412;
+            margin-bottom: 14px;
+        }
+
+        .finished-pizza-showcase {
+            position: relative;
+            width: 240px;
+            height: 240px;
+            border-radius: 50%;
+            margin: 6px auto 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: radial-gradient(circle at 35% 35%, #deb887, #bc8f5f 75%, #9c6f44 100%);
+            border: 4px solid #8b5a2b;
+            box-shadow: 
+                0 16px 30px rgba(69, 26, 3, 0.4),
+                0 0 30px rgba(245, 158, 11, 0.35);
+        }
+
+        @media (min-width: 480px) {
+            .finished-pizza-showcase {
+                width: 275px;
+                height: 275px;
+            }
+        }
+
+        .finished-pizza-img {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .finished-steam {
+            position: absolute;
+            top: -22px;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: center;
+            gap: 24px;
+            pointer-events: none;
+        }
+
+        .used-ingredients-list {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 18px;
+            min-height: 48px;
+        }
+
+        .used-icon-badge {
+            display: inline-flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 3px;
+            background-color: #ffffff;
+            border: 1.5px solid #fcd34d;
+            color: #78350f;
+            font-size: 0.74rem;
+            font-weight: 700;
+            padding: 6px 10px;
+            border-radius: 16px;
+            box-shadow: 0 2px 6px rgba(120, 53, 15, 0.12);
+        }
+
+        .used-icon-visual {
+            width: 34px;
+            height: 34px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .used-icon-visual svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        .used-tag {
+            background-color: #ffffff;
+            border: 1px solid #fcd34d;
+            color: #78350f;
+            font-size: 0.8rem;
+            font-weight: 700;
+            padding: 6px 14px;
+            border-radius: 9999px;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+        }
+
+        .completion-actions {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            width: 100%;
+        }
+
+        /* 拖曳時的幽靈跟隨元素 */
+        #drag-ghost {
+            position: fixed;
+            pointer-events: none;
+            z-index: 9999;
+            transform: translate(-50%, -50%) scale(1.15);
+            filter: drop-shadow(0 10px 14px rgba(0, 0, 0, 0.45));
+            display: none;
+        }
+        
+       .placed-topping, .ingredient-source { -webkit-touch-callout: none; }
+img, svg { -webkit-user-drag: none; }
+.completion-overlay.open .completion-actions { animation: unlockTap 0.8s both; }
+@keyframes unlockTap {
+    0%, 99% { pointer-events: none; }
+    100% { pointer-events: auto; }
+}
+    </style>
+</head>
+<body>
+
+    <!-- 頂部義式餐館招牌列 -->
+    <header class="app-header">
+        <div class="gingham-banner"></div>
+        <div class="header-bar">
+            <div class="brand-group">
+                <span class="brand-icon">🍕</span>
+                <div>
+                    <h1 class="brand-title">義式窯烤手作披薩工坊</h1>
+                    <p class="brand-subtitle">點擊周圍食材即可均勻鋪滿餅皮・再點一次空盤可取回</p>
+                </div>
+                        </div>
+        </div>
+    </header>
+
+    <!-- 主工作台區域：左側配料 + 中央披薩砧板 + 右側配料 -->
+    <main class="workspace">
+        
+        <!-- 左側配料盤 (4種配料) -->
+        <section aria-label="左側配料區" class="tray-left">
+            <div class="ingredient-source" id="source-tomato" data-type="tomato">
+                <div class="ingredient-bowl">
+                    <div class="icon-preview" id="icon-preview-tomato"></div>
+                </div>
+                <span class="ingredient-label">番茄片</span>
+            </div>
+
+            <div class="ingredient-source" id="source-pineapple" data-type="pineapple">
+                <div class="ingredient-bowl">
+                    <div class="icon-preview" id="icon-preview-pineapple"></div>
+                </div>
+                <span class="ingredient-label">鳳梨片</span>
+            </div>
+
+            <div class="ingredient-source" id="source-shrimp" data-type="shrimp">
+                <div class="ingredient-bowl">
+                    <div class="icon-preview" id="icon-preview-shrimp"></div>
+                </div>
+                <span class="ingredient-label">鮮蝦仁</span>
+            </div>
+
+            <div class="ingredient-source" id="source-bacon" data-type="bacon">
+                <div class="ingredient-bowl">
+                    <div class="icon-preview" id="icon-preview-bacon"></div>
+                </div>
+                <span class="ingredient-label">煙燻培根</span>
+            </div>
+        </section>
+
+        <!-- 中央披薩製作區（含木質砧板與披薩本體） -->
+        <section id="capture-area" class="center-stage">
+            <div id="pizza-board" class="wooden-board">
+                
+                <!-- 砧板手把裝飾 -->
+                <div class="board-handle">
+                    <div class="board-handle-hole"></div>
+                </div>
+
+                <!-- 烘烤出爐後的熱氣蒸氣特效 -->
+                <div id="steam-container" class="steam-container hidden">
+                    <svg class="steam-wisp" viewBox="0 0 30 60" fill="none">
+                        <path d="M15 55 C5 42, 25 28, 12 10" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+                    </svg>
+                    <svg class="steam-wisp" viewBox="0 0 30 60" fill="none">
+                        <path d="M15 55 C25 40, 5 25, 18 8" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+                    </svg>
+                    <svg class="steam-wisp" viewBox="0 0 30 60" fill="none">
+                        <path d="M15 55 C8 40, 22 25, 14 10" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+                    </svg>
+                </div>
+
+                <!-- 披薩本體容器 (放置區) -->
+                <div id="pizza-base" class="pizza-base">
+                    <svg id="pizza-svg" viewBox="0 0 400 400" class="pizza-svg">
+                        <defs>
+                            <radialGradient id="crustGrad" cx="50%" cy="50%" r="50%">
+                                <stop offset="76%" stop-color="#e3a857"/>
+                                <stop offset="88%" stop-color="#d48c36"/>
+                                <stop offset="96%" stop-color="#b86b1e"/>
+                                <stop offset="100%" stop-color="#8c4a0e"/>
+                            </radialGradient>
+                            <radialGradient id="sauceGrad" cx="50%" cy="50%" r="50%">
+                                <stop offset="0%" stop-color="#d9381e"/>
+                                <stop offset="85%" stop-color="#b8250e"/>
+                                <stop offset="100%" stop-color="#8f1907"/>
+                            </radialGradient>
+                            <radialGradient id="cheeseGrad" cx="45%" cy="45%" r="55%">
+                                <stop offset="0%" stop-color="#fff8d6"/>
+                                <stop offset="75%" stop-color="#ffe885"/>
+                                <stop offset="100%" stop-color="#f5cb42"/>
+                            </radialGradient>
+                        </defs>
+
+                        <!-- 1. 外圈手工餅皮 -->
+                        <g id="pizza-crust">
+                            <circle cx="200" cy="200" r="196" fill="url(#crustGrad)"/>
+                            <circle cx="200" cy="200" r="184" fill="none" stroke="#f2c47d" stroke-width="3" stroke-dasharray="18 12 6 14" opacity="0.6"/>
+                            <ellipse cx="75" cy="70" rx="12" ry="6" transform="rotate(-35 75 70)" fill="#9e5312" opacity="0.45"/>
+                            <ellipse cx="330" cy="85" rx="14" ry="5" transform="rotate(40 330 85)" fill="#8c4508" opacity="0.5"/>
+                            <ellipse cx="345" cy="300" rx="11" ry="6" transform="rotate(-50 345 300)" fill="#9e5312" opacity="0.45"/>
+                            <ellipse cx="65" cy="315" rx="15" ry="6" transform="rotate(35 65 315)" fill="#8c4508" opacity="0.5"/>
+                            <ellipse cx="200" cy="14" rx="14" ry="4" fill="#8c4508" opacity="0.4"/>
+                            <ellipse cx="210" cy="386" rx="16" ry="4" fill="#8c4508" opacity="0.45"/>
+                        </g>
+
+                        <!-- 2. 番茄紅醬底層 -->
+                        <circle cx="200" cy="200" r="166" fill="url(#sauceGrad)"/>
+                        <g fill="#4a1c05" opacity="0.35">
+                            <circle cx="130" cy="140" r="1.5"/><circle cx="260" cy="130" r="1.5"/>
+                            <circle cx="150" cy="270" r="1.5"/><circle cx="275" cy="255" r="1.5"/>
+                            <circle cx="205" cy="95" r="1.5"/><circle cx="105" cy="215" r="1.5"/>
+                        </g>
+
+                        <!-- 3. 莫札瑞拉起司層 -->
+                        <path d="M200,42 C235,40 265,55 295,72 C325,90 348,120 355,155 C362,190 358,230 342,265 C326,300 298,332 262,346 C226,360 182,360 146,348 C110,336 78,308 60,274 C42,240 38,196 46,160 C54,124 76,88 106,68 C136,48 165,44 200,42 Z" fill="url(#cheeseGrad)"/>
+                        
+                        <g stroke="#fffdf0" stroke-width="3" stroke-linecap="round" opacity="0.65">
+                            <path d="M130,110 Q150,105 165,118"/>
+                            <path d="M235,95 Q255,105 268,95"/>
+                            <path d="M100,195 Q115,215 102,235"/>
+                            <path d="M295,180 Q282,205 298,225"/>
+                            <path d="M160,295 Q185,285 205,300"/>
+                            <path d="M225,270 Q245,280 260,265"/>
+                        </g>
+
+                        <!-- 4. 烘烤後出現的微焦起司泡泡與焦斑 -->
+                        <g id="char-spots" opacity="0" style="transition: opacity 1.5s ease;">
+                            <circle cx="115" cy="125" r="7" fill="#b86b14" opacity="0.55"/>
+                            <circle cx="115" cy="125" r="4" fill="#6e3504" opacity="0.6"/>
+                            <circle cx="275" cy="115" r="8" fill="#b86b14" opacity="0.55"/>
+                            <circle cx="275" cy="115" r="4.5" fill="#6e3504" opacity="0.65"/>
+                            <circle cx="290" cy="250" r="7" fill="#b86b14" opacity="0.5"/>
+                            <circle cx="290" cy="250" r="3.5" fill="#6e3504" opacity="0.6"/>
+                            <circle cx="120" cy="265" r="9" fill="#b86b14" opacity="0.55"/>
+                            <circle cx="120" cy="265" r="5" fill="#6e3504" opacity="0.65"/>
+                            <circle cx="205" cy="72" r="6" fill="#7a3b06" opacity="0.55"/>
+                            <circle cx="195" cy="325" r="7" fill="#7a3b06" opacity="0.55"/>
+                            <ellipse cx="42" cy="130" rx="8" ry="16" transform="rotate(20 42 130)" fill="#3d1c02" opacity="0.65"/>
+                            <ellipse cx="355" cy="155" rx="7" ry="18" transform="rotate(-15 355 155)" fill="#3d1c02" opacity="0.65"/>
+                            <ellipse cx="145" cy="382" rx="16" ry="6" transform="rotate(15 145 382)" fill="#3d1c02" opacity="0.65"/>
+                            <ellipse cx="265" cy="22" rx="15" ry="6" transform="rotate(22 265 22)" fill="#3d1c02" opacity="0.65"/>
+                        </g>
+                    </svg>
+
+                    <!-- 融化起司光澤覆蓋層 -->
+                    <div id="cheese-melt-overlay" class="cheese-melt-overlay"></div>
+
+                    <!-- 動態放置配料的圖層 -->
+                    <div id="toppings-layer" class="toppings-layer"></div>
+                </div>
+            </div>
+
+            <!-- 操作提示浮動標籤 -->
+            <div id="toast-message" class="toast-message">提示訊息</div>
+        </section>
+
+        <!-- 右側配料盤 (3種配料) -->
+        <section aria-label="右側配料區" class="tray-right">
+            <div class="ingredient-source" id="source-mushroom" data-type="mushroom">
+                <div class="ingredient-bowl">
+                    <div class="icon-preview" id="icon-preview-mushroom"></div>
+                </div>
+                <span class="ingredient-label">切片香菇</span>
+            </div>
+
+            <div class="ingredient-source" id="source-pepper" data-type="pepper">
+                <div class="ingredient-bowl">
+                    <div class="icon-preview" id="icon-preview-pepper"></div>
+                </div>
+                <span class="ingredient-label">新鮮青椒</span>
+            </div>
+
+            <div class="ingredient-source" id="source-corn" data-type="corn">
+                <div class="ingredient-bowl">
+                    <div class="icon-preview" id="icon-preview-corn"></div>
+                </div>
+                <span class="ingredient-label">甜玉米粒</span>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- 底部控制按鈕列 -->
+    <footer class="app-footer">
+        <div class="controls-container">
+            <button id="btn-bake" class="action-btn btn-bake" type="button">
+                <span>🔥</span>
+                <span id="bake-btn-text">送入窯烤</span>
+            </button>
+
+            <button id="btn-clear" class="action-btn btn-clear" type="button">
+                <span>🔄</span>
+                <span>重新製作</span>
+            </button>
+
+ 
+        </div>
+    </footer>
+
+    <!-- 窯烤出爐完成展示畫面 -->
+    <div id="completion-overlay" class="completion-overlay" role="dialog" aria-modal="true" aria-labelledby="completion-title">
+        <div class="completion-card">
+            <span class="completion-badge">WOOD-FIRED ARTISAN PIZZA</span>
+            <h2 id="completion-title" class="completion-title">🍕 手作窯烤披薩出爐完成！</h2>
+            <p class="completion-subtitle">金黃酥脆餅皮搭配濃郁融化起司，香氣四溢！</p>
+
+            <div class="finished-pizza-showcase">
+                <div class="finished-steam">
+                    <svg class="steam-wisp" viewBox="0 0 30 60" fill="none">
+                        <path d="M15 55 C5 42, 25 28, 12 10" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+                    </svg>
+                    <svg class="steam-wisp" viewBox="0 0 30 60" fill="none">
+                        <path d="M15 55 C25 40, 5 25, 18 8" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+                    </svg>
+                    <svg class="steam-wisp" viewBox="0 0 30 60" fill="none">
+                        <path d="M15 55 C8 40, 22 25, 14 10" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+                    </svg>
+                </div>
+               <img id="finished-pizza-img" class="finished-pizza-img" alt="完成的窯烤披薩" draggable="false">
+            </div>
+
+            <div id="used-ingredients-list" class="used-ingredients-list"></div>  <p class="completion-subtitle"></p>
+
+            <div class="completion-actions">
+                <button id="btn-remake-modal" class="action-btn btn-bake" type="button">
+                    <span>🔄</span>
+                    <span>再做一個</span>
+                </button>
+  
+               
+            </div>
+        </div>
+    </div>
+
+    <!-- 拖曳時的跟隨圖示 -->
+    <div id="drag-ghost"></div>
+
+    <script>
+        /**
+         * 七大精緻 SVG 食材定義
+         */
+        const INGREDIENTS = {
+            tomato: {
+                name: '番茄片',
+                size: 68,
+                svg: `
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="100%" height="100%">
+                    <circle cx="32" cy="32" r="29" fill="#d62828" stroke="#9e1919" stroke-width="2"/>
+                    <circle cx="32" cy="32" r="24" fill="#f25c54"/>
+                    <path d="M32 10 C38 10 42 18 35 28 C32 30 29 28 28 28 C22 18 26 10 32 10 Z" fill="#ba181b"/>
+                    <path d="M54 32 C54 38 46 42 36 35 C34 32 36 29 36 28 C46 22 54 26 54 32 Z" fill="#ba181b"/>
+                    <path d="M32 54 C26 54 22 46 29 36 C32 34 35 36 36 36 C42 46 38 54 32 54 Z" fill="#ba181b"/>
+                    <path d="M10 32 C10 26 18 22 28 29 C30 32 28 35 28 36 C18 42 10 38 10 32 Z" fill="#ba181b"/>
+                    <g fill="#ffd166">
+                        <ellipse cx="30" cy="18" rx="1.5" ry="2.5" transform="rotate(-15 30 18)"/>
+                        <ellipse cx="35" cy="20" rx="1.5" ry="2.5" transform="rotate(20 35 20)"/>
+                        <ellipse cx="45" cy="30" rx="2.5" ry="1.5" transform="rotate(-10 45 30)"/>
+                        <ellipse cx="44" cy="35" rx="2.5" ry="1.5" transform="rotate(15 44 35)"/>
+                        <ellipse cx="34" cy="45" rx="1.5" ry="2.5" transform="rotate(-15 34 45)"/>
+                        <ellipse cx="29" cy="44" rx="1.5" ry="2.5" transform="rotate(20 29 44)"/>
+                        <ellipse cx="19" cy="34" rx="2.5" ry="1.5" transform="rotate(-10 19 34)"/>
+                        <ellipse cx="20" cy="29" rx="2.5" ry="1.5" transform="rotate(15 20 29)"/>
+                    </g>
+                    <circle cx="32" cy="32" r="4" fill="#f77f00" opacity="0.6"/>
+                </svg>`
+            },
+            pineapple: {
+                name: '鳳梨片',
+                size: 60,
+                svg: `
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="100%" height="100%">
+                    <path d="M14 46 A 32 32 0 0 1 50 14 L 40 38 A 12 12 0 0 0 26 48 Z" fill="#ffd60a" stroke="#e09f3e" stroke-width="2" stroke-linejoin="round"/>
+                    <path d="M16 44 A 28 28 0 0 1 48 16 L 39 36 A 10 10 0 0 0 27 45 Z" fill="#ffe66d"/>
+                    <line x1="22" y1="36" x2="17" y2="41" stroke="#f4a261" stroke-width="1.5" stroke-linecap="round"/>
+                    <line x1="29" y1="29" x2="23" y2="23" stroke="#f4a261" stroke-width="1.5" stroke-linecap="round"/>
+                    <line x1="36" y1="24" x2="33" y2="17" stroke="#f4a261" stroke-width="1.5" stroke-linecap="round"/>
+                    <line x1="42" y1="21" x2="46" y2="17" stroke="#f4a261" stroke-width="1.5" stroke-linecap="round"/>
+                </svg>`
+            },
+            shrimp: {
+                name: '鮮蝦仁',
+                size: 64,
+                svg: `
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="100%" height="100%">
+                    <path d="M44 46 L56 44 L51 51 L55 57 L43 51 Z" fill="#e63946" stroke="#b5171e" stroke-width="1.5" stroke-linejoin="round"/>
+                    <path d="M22 14 C8 18, 6 42, 24 50 C34 54, 43 51, 45 47 C46 44, 40 41, 33 41 C22 41, 20 30, 27 25 C32 22, 34 17, 30 14 C27 12, 24 13, 22 14 Z" fill="#ff8fa3" stroke="#d90429" stroke-width="1.8"/>
+                    <path d="M14 25 Q21 26 23 28" stroke="#f72585" stroke-width="2.5" stroke-linecap="round" opacity="0.65"/>
+                    <path d="M12 34 Q20 33 23 34" stroke="#f72585" stroke-width="2.5" stroke-linecap="round" opacity="0.65"/>
+                    <path d="M17 43 Q23 39 26 39" stroke="#f72585" stroke-width="2.5" stroke-linecap="round" opacity="0.65"/>
+                    <path d="M28 49 Q31 44 33 42" stroke="#f72585" stroke-width="2.5" stroke-linecap="round" opacity="0.65"/>
+                    <path d="M19 19 C13 24, 12 36, 20 43" fill="none" stroke="#fff0f3" stroke-width="2" stroke-linecap="round" opacity="0.8"/>
+                </svg>`
+            },
+            bacon: {
+                name: '煙燻培根',
+                size: 70,
+                svg: `
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="100%" height="100%">
+                    <path d="M10 22 C18 14, 28 24, 38 16 C46 10, 54 16, 56 22 L52 42 C46 36, 36 46, 26 38 C18 32, 12 40, 8 36 Z" fill="#b5171e" stroke="#780000" stroke-width="1.8" stroke-linejoin="round"/>
+                    <path d="M10 26 C18 19, 28 29, 38 21 C45 15, 51 20, 54 25" fill="none" stroke="#ffccd5" stroke-width="3.5" stroke-linecap="round"/>
+                    <path d="M9 32 C17 26, 27 35, 37 28 C44 23, 50 27, 53 31" fill="none" stroke="#fff0f3" stroke-width="2.5" stroke-linecap="round" opacity="0.85"/>
+                </svg>`
+            },
+            mushroom: {
+                name: '切片香菇',
+                size: 62,
+                svg: `
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="100%" height="100%">
+                    <path d="M10 34 C10 16, 54 16, 54 34 C54 39, 44 40, 40 38 L40 50 C40 53, 24 53, 24 50 L24 38 C20 40, 10 39, 10 34 Z" fill="#d8c3a5" stroke="#8e735b" stroke-width="2" stroke-linejoin="round"/>
+                    <path d="M11 32 C12 17, 52 17, 53 32 C45 30, 19 30, 11 32 Z" fill="#8d6e63"/>
+                    <path d="M16 35 Q20 38 24 36" fill="none" stroke="#6d4c41" stroke-width="2" stroke-linecap="round"/>
+                    <path d="M40 36 Q44 38 48 35" fill="none" stroke="#6d4c41" stroke-width="2" stroke-linecap="round"/>
+                    <ellipse cx="32" cy="23" rx="10" ry="3" fill="#bcaaa4" opacity="0.45"/>
+                </svg>`
+            },
+            pepper: {
+                name: '新鮮青椒',
+                size: 65,
+                svg: `
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="100%" height="100%">
+                    <path d="M32 10 C42 10, 52 16, 52 26 C56 34, 50 48, 40 50 C34 54, 24 52, 18 46 C10 40, 10 26, 18 18 C22 12, 27 10, 32 10 Z" fill="none" stroke="#2b9348" stroke-width="6.5" stroke-linejoin="round"/>
+                    <path d="M32 10 C42 10, 52 16, 52 26 C56 34, 50 48, 40 50 C34 54, 24 52, 18 46 C10 40, 10 26, 18 18 C22 12, 27 10, 32 10 Z" fill="none" stroke="#80b918" stroke-width="2.5" stroke-linejoin="round"/>
+                </svg>`
+            },
+            corn: {
+                name: '甜玉米粒',
+                size: 48,
+                svg: `
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="100%" height="100%">
+                    <g transform="translate(8, 12)">
+                        <rect x="2" y="4" width="22" height="24" rx="9" fill="#ffb703" stroke="#fb8500" stroke-width="2"/>
+                        <ellipse cx="10" cy="11" rx="4" ry="2.5" fill="#fff3b0" opacity="0.85"/>
+                    </g>
+                    <g transform="translate(30, 8) rotate(18)">
+                        <rect x="2" y="4" width="22" height="24" rx="9" fill="#ffd166" stroke="#fb8500" stroke-width="2"/>
+                        <ellipse cx="10" cy="11" rx="4" ry="2.5" fill="#ffffff" opacity="0.85"/>
+                    </g>
+                    <g transform="translate(20, 28) rotate(-12)">
+                        <rect x="2" y="4" width="22" height="24" rx="9" fill="#ffc300" stroke="#e85d04" stroke-width="2"/>
+                        <ellipse cx="10" cy="11" rx="4" ry="2.5" fill="#fff3b0" opacity="0.85"/>
+                    </g>
+                </svg>`
+            }
+        };
+
+        // 狀態管理
+        let isBaked = false;
+        let activeDrag = null; // { mode: 'new' | 'move', type, element, offsetX, offsetY }
+        let pointerDownInfo = null; // 用於區分點擊與拖曳
+        let audioCtx = null;
+        const usedIngredients = new Set(); // 記錄已加入披薩的配料種類（單次消耗制）
+
+        // DOM 元素參照
+        const pizzaBase = document.getElementById('pizza-base');
+        const pizzaBoard = document.getElementById('pizza-board');
+        const toppingsLayer = document.getElementById('toppings-layer');
+        const dragGhost = document.getElementById('drag-ghost');
+        const headerAddedIconsEl = document.getElementById('header-added-icons');
+        const statsDrawer = document.getElementById('stats-drawer');
+        const toastEl = document.getElementById('toast-message');
+        const steamContainer = document.getElementById('steam-container');
+        const completionOverlay = document.getElementById('completion-overlay');
+        const finishedPizzaImg = document.getElementById('finished-pizza-img');
+        const usedIngredientsList = document.getElementById('used-ingredients-list');
+let toastTimer = null;
+
+function showToast(message) {
+    toastEl.textContent = message;
+    toastEl.classList.add('visible');
+
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => {
+        toastEl.classList.remove('visible');
+    }, 2200);
+}function syncBowlStates() {
+    document.querySelectorAll('.ingredient-source').forEach(sourceEl => {
+        sourceEl.classList.toggle('used', usedIngredients.has(sourceEl.dataset.type));
+    });
+}
+        /**
+         * 原生 Web Audio API 音效引擎（零外部依賴、無警告）
+         */
+        function ensureAudioContext() {
+            if (!audioCtx) {
+                const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+                if (AudioContextClass) {
+                    audioCtx = new AudioContextClass();
+                }
+            }
+            if (audioCtx && audioCtx.state === 'suspended') {
+                audioCtx.resume().catch(() => {});
+            }
+        }
+
+        function playPopSound(freq = 520) {
+            ensureAudioContext();
+            if (!audioCtx) return;
+            try {
+                const now = audioCtx.currentTime;
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(freq * 0.75, now);
+                osc.frequency.exponentialRampToValueAtTime(freq, now + 0.08);
+
+                gain.gain.setValueAtTime(0.18, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
+
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start(now);
+                osc.stop(now + 0.13);
+            } catch (e) {}
+        }
+
+        function playRemoveSound() {
+            ensureAudioContext();
+            if (!audioCtx) return;
+            try {
+                const now = audioCtx.currentTime;
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(420, now);
+                osc.frequency.exponentialRampToValueAtTime(220, now + 0.1);
+
+                gain.gain.setValueAtTime(0.15, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.11);
+
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start(now);
+                osc.stop(now + 0.12);
+            } catch (e) {}
+        }
+
+        function playOvenDingSound() {
+            ensureAudioContext();
+            if (!audioCtx) return;
+            try {
+                const now = audioCtx.currentTime;
+                // 雙諧波清脆烤爐鈴聲
+                [1046.5, 2093].forEach((freq, idx) => {
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(freq, now);
+
+                    gain.gain.setValueAtTime(idx === 0 ? 0.22 : 0.08, now);
+                    gain.gain.exponentialRampToValueAtTime(0.0008, now + 1.1);
+
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.start(now);
+                    osc.stop(now + 1.15);
+                });
+            } catch (e) {}
+        }
+
+        /**
+         * 更新頂部「已加入配料」圖示列與展開明細
+         */
+        function updateStats() {
+            
+
+          
+        };
+
+        /**
+         * 取得指標座標 (相容 Mouse 與 Touch)
+         */
+         const SCATTER_COUNT = 8;      // 每種配料撒幾片
+const SCATTER_SCALE = 0.7;    // 每片大小(1 = 原尺寸)
+const SCATTER_RADIUS = 34;    // 鋪撒範圍(越大越靠邊)
+
+function scatterIngredient(type) {
+    const config = INGREDIENTS[type];
+    if (!config || usedIngredients.has(type)) return;
+    usedIngredients.add(type);
+    syncBowlStates();
+
+    const offset = Math.random() * Math.PI * 2;
+    const sizePercent = (config.size * SCATTER_SCALE / 380) * 100;
+
+    for (let i = 0; i < SCATTER_COUNT; i++) {
+        const r = SCATTER_RADIUS * Math.sqrt((i + 0.5) / SCATTER_COUNT);
+        const a = offset + i * 2.39996;
+        const relX = 50 + Math.cos(a) * r + (Math.random() - 0.5) * 3;
+        const relY = 50 + Math.sin(a) * r + (Math.random() - 0.5) * 3;
+        const rotation = Math.floor(Math.random() * 360);
+
+        const el = document.createElement('div');
+        el.className = 'placed-topping';
+        el.dataset.type = type;
+        el.dataset.rotation = rotation;
+        el.dataset.relX = relX.toFixed(4);
+        el.dataset.relY = relY.toFixed(4);
+        el.style.width = `${sizePercent}%`;
+        el.style.height = `${sizePercent}%`;
+        el.style.left = `${relX}%`;
+        el.style.top = `${relY}%`;
+        el.style.transform = `translate(-50%, -50%) rotate(${rotation}deg)`;
+        el.innerHTML = config.svg;
+        toppingsLayer.appendChild(el);
+    }
+}
+
+function removeIngredient(type) {
+    toppingsLayer.querySelectorAll(`.placed-topping[data-type="${type}"]`).forEach(el => el.remove());
+    usedIngredients.delete(type);
+    syncBowlStates();
+    playRemoveSound();
+    showToast(`已將「${INGREDIENTS[type].name}」放回盤子裡`);
+}
+document.querySelectorAll('.ingredient-source').forEach(sourceEl => {
+    sourceEl.addEventListener('click', () => {
+        ensureAudioContext();
+        const type = sourceEl.dataset.type;
+        if (usedIngredients.has(type)) {
+            removeIngredient(type);
+        } else {
+            scatterIngredient(type);
+            playPopSound(540);
+        }
+    });
+});
+
+
+
+        /**
+         * 在披薩上建立一個新的配料 DOM 元素（每種配料限用一次，加入後原盤變空）
+         */
+        
+
+        
+
+        /**
+         * 全域拖曳移動處理
+         */
+        
+
+        /**
+         * 全域放開結束拖曳處理
+         */
+        
+
+        /**
+         * 展開/收合配料明細
+         */
+        
+
+        /**
+         * 重置工作台狀態（清空披薩並恢復所有配料盤）
+         */
+        function resetWorkspace(silent = false) {
+            toppingsLayer.innerHTML = '';
+            usedIngredients.clear();
+            syncBowlStates();
+            isBaked = false;
+            pizzaBase.classList.remove('baked-pizza');
+            steamContainer.classList.add('hidden');
+            completionOverlay.classList.remove('open');
+            document.getElementById('bake-btn-text').textContent = '送入窯烤';
+            updateStats();
+            if (!silent) {
+                playRemoveSound();
+                showToast('🔄 已清空餅皮並補滿所有配料盤！');
+            }
+        }
+
+        /**
+         * 送入窯烤：播放窯烤動畫與音效，並呈現「完成畫面的披薩」
+         */
+        document.getElementById('btn-bake').addEventListener('click', async () => {
+    ensureAudioContext();
+
+    // 如果已經烤過，直接開啟成品畫面
+    if (isBaked) {
+        completionOverlay.classList.add('open');
+        return;
+    }
+
+    const bakeBtnText = document.getElementById('bake-btn-text');
+
+    isBaked = true;
+    pizzaBoard.classList.remove('baking-animation');
+    void pizzaBoard.offsetWidth;
+    pizzaBoard.classList.add('baking-animation');
+    pizzaBase.classList.add('baked-pizza');
+    steamContainer.classList.remove('hidden');
+    bakeBtnText.textContent = '查看出爐成品';
+
+    playOvenDingSound();
+    showToast('🔥 窯烤中... 香噴噴的披薩即將出爐！');
+
+    // 產生完成畫面的披薩照片
+    try {
+        const dataUrl = await renderPizzaDataURL();
+        finishedPizzaImg.src = dataUrl;
+    } catch (err) {
+        console.error(err);
+        showToast('⚠️ 成品圖片產生失敗');
+    }
+
+    // 更新完成畫面上的配料列表
+    if (usedIngredients.size === 0) {
+        usedIngredientsList.innerHTML =
+            `<span class="used-tag">純起司原味</span>`;
+    } else {
+        usedIngredientsList.innerHTML =
+            Array.from(usedIngredients).map(type => `
+                <div class="used-icon-badge" title="${INGREDIENTS[type].name}">
+                    <div class="used-icon-visual">
+                        ${INGREDIENTS[type].svg}
+                    </div>
+                    <span>${INGREDIENTS[type].name}</span>
+                </div>
+            `).join('');
+    }
+
+    // 動畫結束後顯示完成畫面
+    setTimeout(() => {
+        pizzaBoard.classList.remove('baking-animation');
+        completionOverlay.classList.add('open');
+    }, 950);
+});
+
+        /**
+         * 重新製作按鈕
+         */
+        document.getElementById('btn-clear').addEventListener('click', () => {
+            ensureAudioContext();
+            resetWorkspace(false);
+        });
+
+        document.getElementById('btn-remake-modal').addEventListener('click', () => {
+            ensureAudioContext();
+            resetWorkspace(false);
+        });
+
+        
+
+        /**
+         * 輔助函式：將 SVG 字串轉為可繪製在 Canvas 上的 Image 物件
+         */
+        function svgToImage(svgString) {
+    return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => resolve(img);
+        img.onerror = reject;
+        img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svgString.trim());
+    });
+}
+
+        /**
+         * 繪製高畫質披薩成品並回傳 DataURL（供完成畫面展示與下載共用）
+         */
+        async function renderPizzaDataURL() {
+            const size = 900;
+            const canvas = document.createElement('canvas');
+            canvas.width = size;
+            canvas.height = size;
+            const ctx = canvas.getContext('2d');
+
+            // 1. 繪製溫暖義式木紋桌面背景
+            const bgGrad = ctx.createRadialGradient(size / 2, size / 2, 60, size / 2, size / 2, size * 0.72);
+            bgGrad.addColorStop(0, '#e2b487');
+            bgGrad.addColorStop(1, '#b37c4c');
+            ctx.fillStyle = bgGrad;
+            ctx.fillRect(0, 0, size, size);
+
+            ctx.strokeStyle = 'rgba(139, 90, 43, 0.08)';
+            ctx.lineWidth = 3;
+            for (let x = 0; x < size; x += 24) {
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, size);
+                ctx.stroke();
+            }
+
+            // 2. 繪製木質砧板陰影與本體
+            const cx = size / 2;
+            const cy = size / 2;
+            const boardR = 370;
+
+            ctx.save();
+            ctx.shadowColor = 'rgba(58, 32, 10, 0.45)';
+            ctx.shadowBlur = 35;
+            ctx.shadowOffsetY = 18;
+            const boardGrad = ctx.createRadialGradient(cx - 80, cy - 80, 40, cx, cy, boardR);
+            boardGrad.addColorStop(0, '#deb887');
+            boardGrad.addColorStop(0.75, '#bc8f5f');
+            boardGrad.addColorStop(1, '#9c6f44');
+            ctx.fillStyle = boardGrad;
+            ctx.beginPath();
+            ctx.arc(cx, cy, boardR, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+
+            ctx.lineWidth = 7;
+            ctx.strokeStyle = '#8b5a2b';
+            ctx.beginPath();
+            ctx.arc(cx, cy, boardR, 0, Math.PI * 2);
+            ctx.stroke();
+
+            // 3. 繪製披薩餅皮 SVG
+            const pizzaSvgEl = document.getElementById('pizza-svg');
+            const serializer = new XMLSerializer();
+            const pizzaSvgStr = serializer.serializeToString(pizzaSvgEl);
+            const pizzaImg = await svgToImage(pizzaSvgStr);
+
+            const pizzaDiameter = boardR * 2 * 0.88;
+            const pizzaX = cx - pizzaDiameter / 2;
+            const pizzaY = cy - pizzaDiameter / 2;
+
+            ctx.save();
+            if (isBaked) {
+                ctx.filter = 'brightness(0.93) contrast(1.12) sepia(0.14)';
+            }
+            ctx.drawImage(pizzaImg, pizzaX, pizzaY, pizzaDiameter, pizzaDiameter);
+            ctx.restore();
+
+            // 4. 預載所有配料 SVG 圖片並依序繪製到對應位置
+            const toppingImages = {};
+            for (const key of Object.keys(INGREDIENTS)) {
+                toppingImages[key] = await svgToImage(INGREDIENTS[key].svg);
+            }
+
+            const placedItems = toppingsLayer.querySelectorAll('.placed-topping');
+            placedItems.forEach(item => {
+                const type = item.dataset.type;
+                const relX = parseFloat(item.dataset.relX || 50) / 100;
+                const relY = parseFloat(item.dataset.relY || 50) / 100;
+                const rotDeg = parseFloat(item.dataset.rotation || 0);
+                const img = toppingImages[type];
+                if (!img) return;
+
+                const itemSize = (INGREDIENTS[type].size * SCATTER_SCALE / 380) * pizzaDiameter;
+                const drawX = pizzaX + relX * pizzaDiameter;
+                const drawY = pizzaY + relY * pizzaDiameter;
+
+                ctx.save();
+                ctx.translate(drawX, drawY);
+                ctx.rotate((rotDeg * Math.PI) / 180);
+                ctx.shadowColor = 'rgba(45, 20, 5, 0.45)';
+                ctx.shadowBlur = 8;
+                ctx.shadowOffsetX = 3;
+                ctx.shadowOffsetY = 5;
+                if (isBaked) {
+                    ctx.filter = 'brightness(0.95) contrast(1.15) saturate(1.15)';
+                }
+                ctx.drawImage(img, -itemSize / 2, -itemSize / 2, itemSize, itemSize);
+                ctx.restore();
+            });
+
+            // 5. 若已窯烤，加上起司融化暖色光澤層
+            if (isBaked) {
+                const meltR = pizzaDiameter * 0.39;
+                const meltGrad = ctx.createRadialGradient(cx - 50, cy - 50, 20, cx, cy, meltR);
+                meltGrad.addColorStop(0, 'rgba(255, 235, 130, 0.25)');
+                meltGrad.addColorStop(0.7, 'rgba(230, 140, 20, 0.16)');
+                meltGrad.addColorStop(1, 'rgba(210, 105, 15, 0)');
+                ctx.fillStyle = meltGrad;
+                ctx.beginPath();
+                ctx.arc(cx, cy, meltR, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            // 6. 加上右下角精緻浮水印標籤
+            ctx.fillStyle = 'rgba(255, 248, 238, 0.88)';
+            ctx.beginPath();
+            ctx.roundRect(size - 295, size - 58, 270, 38, 19);
+            ctx.fill();
+            ctx.fillStyle = '#991b1b';
+            ctx.font = 'bold 18px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('🍕 義式窯烤手作披薩工坊', size - 160, size - 33);
+
+            return canvas.toDataURL('image/jpeg', 0.92);
+        }
+
+        /**
+         * 觸發下載披薩照片
+         */
+       
+
+        
+        // 啟動初始化
+        function renderIngredientBowls() {
+    Object.keys(INGREDIENTS).forEach(type => {
+        const preview = document.getElementById(`icon-preview-${type}`);
+        if (preview) {
+            preview.innerHTML = INGREDIENTS[type].svg;
+        }
+    });
+}
+        window.addEventListener('DOMContentLoaded', () => {
+            renderIngredientBowls();
+            updateStats();
+        });
+        window.addEventListener('contextmenu', e => e.preventDefault());
+window.addEventListener('dragstart', e => e.preventDefault());
+    </script>
+</body>
+</html>
